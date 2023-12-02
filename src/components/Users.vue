@@ -371,7 +371,7 @@ export default {
         let res = await this.axios.delete("users/" + id);
         this.$message.success("删除成功");
         this.getUserList();
-
+      // 1
     }
   },
   components: {},
