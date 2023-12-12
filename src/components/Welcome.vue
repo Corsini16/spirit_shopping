@@ -9,7 +9,6 @@
     <p class="copyright">@MuYuanzhao互联网技术传播者</p>
   </div>
 </template>
-
 <script>
 export default {
   props: {},

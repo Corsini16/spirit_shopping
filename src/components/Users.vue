@@ -77,6 +77,7 @@
                 type="warning"
                 icon="el-icon-setting"
                 size="mini"
+                @click="setRole(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -157,12 +158,46 @@
         <el-button type="primary" @click="editUserInfo">确 定</el-button>
       </span>
     </el-dialog>
+
+    <!-- 分配角色权限的对话框 -->
+    <el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogVisible"
+      width="50%" @close="setRoleDialogClose"
+    >
+      <p>当前的用户:{{ userInfo.username }}</p>
+      <br />
+      <p>当前的角色:{{ userInfo.role_name }}</p>
+      <br />
+      <p>
+        分配新角色:
+        <el-select v-model="selectRoleId" placeholder="请选择">
+          <el-option
+            v-for="item in roleList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id"
+          >
+          </el-option>
+        </el-select>
+      </p>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo"
+          >确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
+  
 
 <script>
 export default {
   props: {},
+  beforeRouteEnter(to, from, next) {
+    document.title = to.meta.title;
+    next();
+  },
   data() {
     // 邮箱正则验证
     var checkEmail = (_rule, value, cb) => {
@@ -243,6 +278,14 @@ export default {
           { validator: checkMobile, trigger: "blur" },
         ],
       },
+      // 控制角色分配对话框的显示与隐藏
+      setRoleDialogVisible: false,
+      // 分配角色权限用户信息
+      userInfo: {},
+      // 所有角色的数据信息
+      roleList: [],
+      // 已选中的角色id值
+      selectRoleId: "",
     };
   },
   created() {
@@ -274,7 +317,7 @@ export default {
     },
     // 用户状态改变\
     async userStateChange(userinfo) {
-      console.log(userinfo);
+      // console.log(userinfo);
       //          users/:uId/state/:type
       let res = await this.axios.put(
         `users/${userinfo.id}/state/${userinfo.mg_state}`
@@ -356,30 +399,78 @@ export default {
       });
     },
     // 删除用户
-    async removeUserById(id){
+    async removeUserById(id) {
       // console.log(id);
-   let removeUser= await this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-         }).catch(erro=>erro)
-        // confirm
-        // console.log(removeUser);
-        if(removeUser!='confirm'){
-          return this.$message.info('删除失败')
+      let removeUser = await this.$confirm(
+        "此操作将永久删除该用户, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         }
-        let res = await this.axios.delete("users/" + id);
-        this.$message.success("删除成功");
-        this.getUserList();
+      ).catch((erro) => erro);
+      // confirm
+      // console.log(removeUser);
+      if (removeUser != "confirm") {
+        return this.$message.info("删除失败");
+      }
+      let res = await this.axios.delete("users/" + id);
+      this.$message.success("删除成功");
+      this.getUserList();
       // 1
-    }
+    },
+    //角色分配权限对话框
+    async setRole(userInfo) {
+      // console.log(userInfo);
+      this.userInfo = userInfo;
+
+      // 在展示对话框之前，获取所有角色的列表
+      // let res= await this.axios.get("roles").then((res) => {
+      //   console.log(res);
+      //   if (res.meta.status != 200) {
+      //     this.$message.error("获取角色列表失败");
+      //   } else {
+      //     this.roleList = res.data.roles;
+      //   })
+      let res = await this.axios.get("roles");
+      // console.log(res);
+      if (res.meta.status != 200) {
+        return this.$message.error("获取角色列表失败");
+      }
+      this.roleList = res.data;
+
+      this.setRoleDialogVisible = true;
+    },
+    // 点击确定,保存角色分配权限
+    async saveRoleInfo(){
+      // console.log(!this.selectRoleId);
+      if (!this.selectRoleId) {
+        return  this.$message.error('请选择要分配的角色')
+      }
+      let res =await this.axios.put(`users/${this.userInfo.id}/role`,
+      {rid:this.selectRoleId})
+      if(res.meta.status!=200){
+        return this.$message.error('更新角色失败!')
+      }
+
+      this.$message.success('更新角色成功!')
+      this.getUserList();
+      this.setRoleDialogVisible=false
+    },
+    // 监听分配角色对话框的关闭事件
+    setRoleDialogClose(){
+      this.selectRoleId='',
+      this.userInfo='',
+      this.getUserList();
+    },
   },
   components: {},
   mounted() {},
 };
 </script>
 
-<style scoped lang="less">
+<style lang="less">
 .text .el-breadcrumb__inner {
   color: #fff !important;
 }
@@ -390,6 +481,7 @@ export default {
   //       color: red !important;
   //     }
   //   }
+  font-size: 12px;
 }
 .el-card {
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15) !important;
