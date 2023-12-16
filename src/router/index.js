@@ -34,7 +34,30 @@ const routes = [
       {
         path: 'roles',
         component: () => import('@/components/Roles.vue')
-      }]
+      },
+      {
+        path: 'goods',
+        component: () => import('@/components/Goods.vue')
+      },
+      {
+        path: 'params',
+        component: () => import('@/components/Params.vue')
+      },
+      {
+        path: 'categories',
+        component: () => import('@/components/Categories.vue')
+      },
+      {
+        path: 'add',
+        name: 'add',
+        component: () => import('@/components/Add.vue')
+      },
+      {
+        path: 'orders',
+        name: 'orders',
+        component: () => import('@/components/Order.vue')
+      },
+    ]
   },
   {
     path: '/login',
