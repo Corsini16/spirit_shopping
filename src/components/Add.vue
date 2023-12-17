@@ -277,7 +277,7 @@ export default {
           this.addFrom.attrs.push(newInfo);
         });
         //处理静态参数
-        console.log(form);
+        // console.log(form); 
         this.onlyTableList.forEach((item) => {
           let newInfo = {
             attr_id: item.attr_id,

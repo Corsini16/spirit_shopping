@@ -40,7 +40,7 @@ body,
   //       color: red !important;
   //     }
   //   }
-  font-size: 12px;
+  font-size: 12px !important;
 }
 .el-card {
   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15) !important;
